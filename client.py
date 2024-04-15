@@ -42,7 +42,8 @@ def main():
         else:
             break
             # close the connection
-        server_socket.close()
+
+    server_socket.close()
 
 
 if __name__ == '__main__':
