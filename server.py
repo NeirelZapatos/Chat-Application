@@ -2,14 +2,18 @@
 from socket import *
 # import thread module
 from threading import *
+#  system module
 import sys
 
+# checks if right amount of arguments were passed
 if len(sys.argv) != 2:
     print("Usage: python3 server.py <svr_port>")
     sys.exit(1)
 
+# server port set from argument
 server_port = int(sys.argv[1])
 
+# init dicts
 active_users = {}
 stored_threads = {}
 
@@ -28,6 +32,7 @@ def threaded(client_socket):
             # print_lock.release()
             break
 
+        # checks and validates the join command
         if command == "JOIN":
             username = data.split()[1]
             if client_socket in active_users:
@@ -45,18 +50,14 @@ def threaded(client_socket):
                 client_socket.send(message.encode("ascii"))
                 print(f"{username} Joined the Chatroom")
             # print(active_users)
+
     # connection closed
     client_socket.close()
 
 
 def main():
+    # binding the socket
     host = ""
-
-    # reserve a port on your computer
-    # in our case it is 12345 but it
-    # can be anything
-    # port = 12345
-
     server_socket = socket(AF_INET, SOCK_STREAM)
     server_socket.bind((host, server_port))
     print("Socket binded to port", server_port)
@@ -69,12 +70,11 @@ def main():
     while True:
         # establish connection with client
         client_socket, addr = server_socket.accept()
+        address = f"{addr[0]} : {addr[1]}"
+        print(f"Connected to : {address}")
 
         # lock acquired by client
         # print_lock.acquire()
-        print('Connected to :', addr[0], ':', addr[1])
-
-        address = f"{addr[0]} : {addr[1]}"
 
         # Start a new thread and return its identifier
         if address not in stored_threads:
@@ -83,6 +83,7 @@ def main():
             stored_threads[address] = thread
             thread.start()
 
+    # closes socket
     server_socket.close()
 
 
