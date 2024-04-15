@@ -1,28 +1,37 @@
 # Import socket module
-import socket
+from socket import *
+import sys
+
+if len(sys.argv) != 2:
+    print("Usage: python3 client.py <svr_port>")
+    sys.exit(1)
+
+server_port = int(sys.argv[1])
 
 
 def main():
     # local host IP '127.0.0.1'
-    host = '127.0.0.1'
+    host = 'ecs-coding1.csus.edu'
 
     # Define the port on which you want to connect
-    port = 12345
+    # port = 12345
 
-    serv_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket = socket(AF_INET, SOCK_STREAM)
 
     # connect to server on local computer
-    serv_sock.connect((host, port))
+    server_socket.connect((host, server_port))
 
     # message you send to server
     message = "Hello, this is threading program"
     while True:
 
+        command = input("Enter Command ")
+        message = command
         # message sent to server
-        serv_sock.send(message.encode('ascii'))
+        server_socket.send(message.encode('ascii'))
 
         # message received from server
-        data = serv_sock.recv(1024)
+        data = server_socket.recv(1024)
 
         # print the received message
         # here it would be a reverse of sent message
@@ -34,9 +43,9 @@ def main():
             continue
         else:
             break
-    # close the connection
-    serv_sock.close()
+            # close the connection
+        server_socket.close()
 
+        if __name__ == '__main__':
+            main()
 
-if __name__ == '__main__':
-    main()
