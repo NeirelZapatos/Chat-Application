@@ -61,6 +61,7 @@ def threaded(client_socket):
                     message += f"{username}\n"
             else:
                 message = "Only Users can use the LIST command"
+
             client_socket.send(message.encode("ascii"))
 
     # connection closed
