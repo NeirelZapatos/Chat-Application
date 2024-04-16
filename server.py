@@ -15,19 +15,24 @@ server_port = int(sys.argv[1])
 
 # init dicts
 active_users = {}
-stored_threads = {}
-
 
 # thread function
 def threaded(client_socket):
+    # loops until break
     while True:
         # data received from client
         data = client_socket.recv(1024)
         data = str(data.decode('ascii'))
-        command = data.split()[0]
 
+        # checks the command
+        if len(data.split()) > 1:
+            command = data.split()[0]
+        else:
+            command = data
+        # if no data returned this disconnect
         if not data:
             print('Disconnecting')
+            del active_users[client_socket]
             # lock released on exit
             # print_lock.release()
             break
@@ -49,11 +54,19 @@ def threaded(client_socket):
                 message = f"You have joined as {username}"
                 client_socket.send(message.encode("ascii"))
                 print(f"{username} Joined the Chatroom")
-            # print(active_users)
+
+        # send the users in chatroom if client is a user currently in the chatroom
+        if command == "LIST":
+            if client_socket in active_users:
+                message = "Users in Chatroom: "
+                for username in active_users.values():
+                    message += f" {username},"
+            else:
+                message = "Only Users can use the LIST command"
+            client_socket.send(message.encode("ascii"))
 
     # connection closed
     client_socket.close()
-
 
 def main():
     # binding the socket
@@ -77,11 +90,9 @@ def main():
         # print_lock.acquire()
 
         # Start a new thread and return its identifier
-        if address not in stored_threads:
-            thread = Thread(target=threaded, args=(client_socket,))
-            # receive_thread = threading.Thread(target=receive,args=(nickname, client_socket,))
-            stored_threads[address] = thread
-            thread.start()
+        thread = Thread(target=threaded, args=(client_socket,))
+        # receive_thread = threading.Thread(target=receive,args=(nickname, client_socket,))
+        thread.start()
 
     # closes socket
     server_socket.close()

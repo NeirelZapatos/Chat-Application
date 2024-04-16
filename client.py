@@ -30,10 +30,14 @@ def main():
         server_socket.send(message.encode('ascii'))
 
         # message received from server
-        data = server_socket.recv(1024)
-
-        # print the received message
-        print('Received from the server :', str(data.decode('ascii')))
+        try:
+            data = server_socket.recv(1024)
+            # print the received message
+            print('Received from the server :\n', str(data.decode('ascii')))
+        except:
+            print("Error")
+            server_socket.close()
+            break
 
         # ask the client whether he wants to continue
         resp = input('\nDo you want to continue(y/n) :')
@@ -41,11 +45,10 @@ def main():
             continue
         else:
             break
-            # close the connection
 
+    # close the connection
     server_socket.close()
 
 
 if __name__ == '__main__':
     main()
-
