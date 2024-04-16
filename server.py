@@ -42,18 +42,16 @@ def threaded(client_socket):
             username = data.split()[1]
             if client_socket in active_users:
                 message = "Client can't have multiple users"
-                client_socket.send(message.encode("ascii"))
             elif username in active_users.values():
                 message = "Username already in use"
-                client_socket.send(message.encode("ascii"))
             elif len(active_users) >= 10:
                 message = "Too many users"
-                client_socket.send(message.encode("ascii"))
             else:
                 active_users[client_socket] = username
                 message = f"You have joined as {username}"
-                client_socket.send(message.encode("ascii"))
                 print(f"{username} Joined the Chatroom")
+
+            client_socket.send(message.encode("ascii"))
 
         # send the users in chatroom if client is a user currently in the chatroom
         if command == "LIST":
