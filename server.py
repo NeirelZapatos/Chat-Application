@@ -29,12 +29,6 @@ def threaded(client_socket):
         except:
             pass
 
-
-        if len(data.split()) > 1:
-            command = data.split()[0]
-        else:
-            command = data
-
         # if no data returned this disconnect
         if not data:
             username = active_users[client_socket]
@@ -44,6 +38,12 @@ def threaded(client_socket):
             # lock released on exit
             # print_lock.release()
             break
+
+        # gets command
+        if len(data.split()) > 1:
+            command = data.split()[0]
+        else:
+            command = data
 
         # checks and validates the join command
         if command == "JOIN":
