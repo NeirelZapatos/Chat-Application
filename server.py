@@ -29,10 +29,12 @@ def threaded(client_socket):
             command = data.split()[0]
         else:
             command = data
+
         # if no data returned this disconnect
         if not data:
             print('Disconnecting')
-            del active_users[client_socket]
+            if client_socket in active_users:
+                del active_users[client_socket]
             # lock released on exit
             # print_lock.release()
             break
