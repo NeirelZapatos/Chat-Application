@@ -16,18 +16,20 @@ server_port = int(sys.argv[1])
 # init dicts
 active_users = {}
 
+
 # thread function
 def threaded(client_socket):
-    # init username
-    username = ""
-
-    # loops until break
+    # runs until break
     while True:
-        # data received from client
-        data = client_socket.recv(1024)
-        data = str(data.decode('ascii'))
 
-        # checks the command
+        # data received from client
+        try:
+            data = client_socket.recv(1024)
+            data = str(data.decode('ascii'))
+        except:
+            pass
+
+
         if len(data.split()) > 1:
             command = data.split()[0]
         else:
@@ -35,6 +37,7 @@ def threaded(client_socket):
 
         # if no data returned this disconnect
         if not data:
+            username = active_users[client_socket]
             print(f'Disconnecting {username}')
             if client_socket in active_users:
                 del active_users[client_socket]
@@ -61,16 +64,34 @@ def threaded(client_socket):
         # send the users in chatroom if client is a user currently in the chatroom
         if command == "LIST":
             if client_socket in active_users:
-                message = "Users in Chatroom:\n "
+                message = "Users in Chatroom: "
                 for username in active_users.values():
-                    message += f"{username}\n"
+                    message += f"{username}, "
             else:
                 message = "Only Users can use the LIST command"
 
             client_socket.send(message.encode("ascii"))
 
+        # broadcast message to every user in chatroom
+        if command == "BCST":
+            if client_socket in active_users:
+                username = active_users[client_socket]
+                words = data.split()
+                send_words = words[1:]
+                joined_words = ' '.join(send_words)
+                for user_socket in active_users.keys():
+                    if user_socket != client_socket:
+                        message = f"{username}: {joined_words}"
+                    else:
+                        message = f"Sent: {joined_words}"
+                    user_socket.send(message.encode("ascii"))
+            else:
+                message = "You must be a user in the Chatroom to use the BCST command"
+                client_socket.send(message.encode("ascii"))
+
     # connection closed
     client_socket.close()
+
 
 def main():
     # binding the socket
@@ -90,13 +111,13 @@ def main():
         address = f"{addr[0]} : {addr[1]}"
         print(f"Connected to : {address}")
 
-        # lock acquired by client
-        # print_lock.acquire()
-
         # Start a new thread and return its identifier
         thread = Thread(target=threaded, args=(client_socket,))
-        # receive_thread = threading.Thread(target=receive,args=(nickname, client_socket,))
         thread.start()
+
+        # lock acquired by client
+        # print_lock.acquire()
+        # receive_thread = threading.Thread(target=receive,args=(nickname, client_socket,))
 
     # closes socket
     server_socket.close()
