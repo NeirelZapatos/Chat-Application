@@ -36,7 +36,6 @@ def main():
             print('Received from the server :\n', str(data.decode('ascii')))
         except:
             print("Error")
-            server_socket.close()
             break
 
         # ask the client whether he wants to continue
