@@ -10,6 +10,11 @@ def register_user(username):
     registered_clients.append(username) # Append username to list of registered clients
     print(f"{username} has registered successfully.") # Print message
 
+    if len(registered_clients) == 5: # Check if 5 users have joined
+        print("Server output after 5 users joined the chatroom:")
+        for user in registered_clients:
+            print(f"{user} Joined the Chatroom")
+        
 # Function to relay a message from a sender to a recipient if the recipient is registered.
 def relay_message(sender, recipient, message, server_socket):
     if recipient not in registered_clients: # If not registered print Unknown Recipient
@@ -108,8 +113,8 @@ def setup_connection(server_port):
 
 # Function to check command line arguments and start the connection
 def check_args_and_start():
-    if len(sys.argv) != 2: #If arguments not 2
-        print("Usage: python3 client.py <svr_port>") #Print usage statement
+    if len(sys.argv) != 3: #If arguments not 2
+        print("Usage: python3 client.py <host> <svr_port>") #Print usage statement
         sys.exit(1) #Exit
 
     server_port = int(sys.argv[1]) #Assign port based on command line argument
