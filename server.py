@@ -18,6 +18,9 @@ active_users = {}
 
 # thread function
 def threaded(client_socket):
+    # init username
+    username = ""
+
     # loops until break
     while True:
         # data received from client
