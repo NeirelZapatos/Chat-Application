@@ -35,7 +35,7 @@ def threaded(client_socket):
 
         # if no data returned this disconnect
         if not data:
-            print('Disconnecting')
+            print(f'Disconnecting {username}')
             if client_socket in active_users:
                 del active_users[client_socket]
             # lock released on exit
