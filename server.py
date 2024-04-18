@@ -2,7 +2,7 @@
 from socket import *
 # import thread module
 from threading import *
-#  system module
+# system module
 import sys
 
 # checks if right amount of arguments were passed
@@ -69,6 +69,22 @@ def threaded(client_socket):
 
             client_socket.send(message.encode("ascii"))
 
+        # send messages to individual clients or broadcast messages
+        if command == "MESG":
+            recipient = data.split()[1]
+            message = ' '.join(data.split()[2:])
+            if recipient in active_users.values():
+                for client_socket, username in active_users.items():
+                    if username == recipient:
+                        client_socket.send(f"Message from {username}: {message}".encode("ascii"))
+            else:
+                client_socket.send("Recipient not found".encode("ascii"))
+
+        elif command == "BCST":
+            message = ' '.join(data.split()[1:])
+            for client_socket in active_users.keys():
+                client_socket.send(f"Broadcast message: {message}".encode("ascii"))
+
     # connection closed
     client_socket.close()
 
@@ -95,12 +111,10 @@ def main():
 
         # Start a new thread and return its identifier
         thread = Thread(target=threaded, args=(client_socket,))
-        # receive_thread = threading.Thread(target=receive,args=(nickname, client_socket,))
         thread.start()
 
-    # closes socket
+    # closes the socket
     server_socket.close()
-
 
 if __name__ == '__main__':
     main()
