@@ -16,31 +16,34 @@ server_port = int(sys.argv[1])
 # init dicts
 active_users = {}
 
+
 # thread function
 def threaded(client_socket):
-    # init username
-    username = ""
-
-    # loops until break
+    # runs until break
     while True:
-        # data received from client
-        data = client_socket.recv(1024)
-        data = str(data.decode('ascii'))
 
-        # checks the command
-        if len(data.split()) > 1:
-            command = data.split()[0]
-        else:
-            command = data
+        # data received from client
+        try:
+            data = client_socket.recv(1024)
+            data = str(data.decode('ascii'))
+        except:
+            pass
 
         # if no data returned this disconnect
         if not data:
+            username = active_users[client_socket]
             print(f'Disconnecting {username}')
             if client_socket in active_users:
                 del active_users[client_socket]
             # lock released on exit
             # print_lock.release()
             break
+
+        # gets command
+        if len(data.split()) > 1:
+            command = data.split()[0]
+        else:
+            command = data
 
         # checks and validates the join command
         if command == "JOIN":
@@ -69,24 +72,22 @@ def threaded(client_socket):
 
             client_socket.send(message.encode("ascii"))
 
-        # send messages to individual clients or broadcast messages
-        if command == "MESG":
-            recipient = data.split()[1]
-            message = ' '.join(data.split()[2:])
-            if recipient in active_users.values():
-                for client_socket, username in active_users.items():
-                    if username == recipient:
-                        client_socket.send(f"{username}: {message}".encode("ascii"))
+        # broadcast message to every user in chatroom
+        if command == "BCST":
+            if client_socket in active_users:
+                username = active_users[client_socket]
+                words = data.split()
+                send_words = words[1:]
+                joined_words = ' '.join(send_words)
+                for user_socket in active_users.keys():
+                    if user_socket != client_socket:
+                        message = f"{username}: {joined_words}"
+                    else:
+                        message = f"Sent: {joined_words}"
+                    user_socket.send(message.encode("ascii"))
             else:
-                client_socket.send("Recipient not found".encode("ascii"))
-
-        elif command == "BCST":
-            message = ' '.join(data.split()[1:])
-            for client_socket in active_users.keys():
-                client_socket.send(f"Broadcast message: {message}".encode("ascii"))
-
-    # connection closed
-    client_socket.close()
+                message = "You must be a user in the Chatroom to use the BCST command"
+                client_socket.send(message.encode("ascii"))
 
 def main():
     # binding the socket
@@ -113,8 +114,9 @@ def main():
         thread = Thread(target=threaded, args=(client_socket,))
         thread.start()
 
-    # closes the socket
+    # closes socket
     server_socket.close()
+
 
 if __name__ == '__main__':
     main()
