@@ -18,8 +18,6 @@ active_users = {}
 
 # thread function
 def threaded(client_socket):
-    # init username
-    username = ""
 
     # loops until break
     while True:
@@ -27,20 +25,24 @@ def threaded(client_socket):
         data = client_socket.recv(1024)
         data = str(data.decode('ascii'))
 
-        # checks the command
-        if len(data.split()) > 1:
-            command = data.split()[0]
-        else:
-            command = data
+ 
 
         # if no data returned this disconnect
         if not data:
+            username = active_users[client_socket]
+
             print(f'Disconnecting {username}')
             if client_socket in active_users:
                 del active_users[client_socket]
             # lock released on exit
             # print_lock.release()
             break
+
+        # checks the command
+        if len(data.split()) > 1:
+            command = data.split()[0]
+        else:
+            command = data
 
         # checks and validates the join command
         if command == "JOIN":
@@ -55,6 +57,9 @@ def threaded(client_socket):
                 active_users[client_socket] = username
                 message = f"You have joined as {username}"
                 print(f"{username} Joined the Chatroom")
+                for client_sock, user in active_users.items(): #Added to broadcat message user Joined!
+                    if client_sock != client_socket:
+                       client_sock.send(f"{username} joined!".encode("ascii"))
 
             client_socket.send(message.encode("ascii"))
 
@@ -118,3 +123,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
