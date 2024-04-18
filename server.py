@@ -76,7 +76,7 @@ def threaded(client_socket):
             if recipient in active_users.values():
                 for client_socket, username in active_users.items():
                     if username == recipient:
-                        client_socket.send(f"Message from {username}: {message}".encode("ascii"))
+                        client_socket.send(f"{username}: {message}".encode("ascii"))
             else:
                 client_socket.send("Recipient not found".encode("ascii"))
 
