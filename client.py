@@ -24,6 +24,12 @@ def client_receive(server_socket):
             print("Error")
             server_socket.close()
             break
+        if not data:
+            print("Disconnecting")
+            server_socket.close()
+            break
+
+    sys.exit(1)
 
 
 def client_send(server_socket):
