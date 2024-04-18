@@ -61,9 +61,9 @@ def threaded(client_socket):
         # send the users in chatroom if client is a user currently in the chatroom
         if command == "LIST":
             if client_socket in active_users:
-                message = "Users in Chatroom:\n "
+                message = "Users in Chatroom: "
                 for username in active_users.values():
-                    message += f"{username}\n"
+                    message += f"{username}, "
             else:
                 message = "Only Users can use the LIST command"
 
