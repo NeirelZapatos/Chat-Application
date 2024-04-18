@@ -61,9 +61,9 @@ def threaded(client_socket):
         # send the users in chatroom if client is a user currently in the chatroom
         if command == "LIST":
             if client_socket in active_users:
-                message = "Users in Chatroom:\n "
+                message = "Users in Chatroom: "
                 for username in active_users.values():
-                    message += f"{username}\n"
+                    message += f"{username}, "
             else:
                 message = "Only Users can use the LIST command"
 
@@ -76,14 +76,14 @@ def threaded(client_socket):
             if recipient in active_users.values():
                 for client_socket, username in active_users.items():
                     if username == recipient:
-                        client_socket.send(f"Message from {username}: {message}".encode("ascii"))
+                          client_socket.send(f"Message from {username}: {message}".encode("ascii"))
             else:
                 client_socket.send("Recipient not found".encode("ascii"))
 
         elif command == "BCST":
             message = ' '.join(data.split()[1:])
             for client_socket in active_users.keys():
-                client_socket.send(f"Broadcast message: {message}".encode("ascii"))
+                client_socket.send(f"{username} : {message}".encode("ascii"))
 
     # connection closed
     client_socket.close()
@@ -95,13 +95,13 @@ def main():
     server_socket.bind((host, server_port))
     print("Socket binded to port", server_port)
 
-    # put the socket into listening mode
+     # put the socket into listening mode
     server_socket.listen(5)
     print("Socket is listening")
 
     # a forever loop until client wants to exit
     while True:
-        # establish connection with client
+         # establish connection with client
         client_socket, addr = server_socket.accept()
         address = f"{addr[0]} : {addr[1]}"
         print(f"Connected to : {address}")
