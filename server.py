@@ -43,22 +43,21 @@ def threaded(client_socket):
 
         # checks and validates the join command
         if command == "JOIN":
-            username = data.split()[1]
+            test_username = data.split()[1]
             if client_socket in active_users:
                 message = "Client can't have multiple users"
-            elif username in active_users.values():
+            elif test_username in active_users.values():
                 message = "Username already in use"
             elif len(active_users) >= 10:
                 message = "Too many users"
             else:
+                username = test_username
                 active_users[client_socket] = username
                 message = f"You have joined as {username}"
                 print(f"{username} Joined the Chatroom")
-                # Needed for the user joining server side
-                client_socket.send(f"{username} joined! Connected to server!".encode("ascii"))
-                for client_sock, user in active_users.items():  # Added to broadcast message user Joined!
-                    if client_sock != client_socket:
-                        client_sock.send(f"{username} joined!".encode("ascii"))
+                for user_socket, user in active_users.items():  # Added to broadcast message user Joined!
+                    if user_socket != client_socket:
+                        user_socket.send(f"{username} joined!".encode("ascii"))
 
             client_socket.send(message.encode("ascii"))
 
@@ -81,7 +80,8 @@ def threaded(client_socket):
                 if recipient in active_users.values():
                     for user_socket, mesg_user in active_users.items():
                         if mesg_user == recipient:
-                            user_socket.send(f"Message from {mesg_user}: {message}".encode("ascii"))
+                            user_socket.send(f"Message from {username}: {message}".encode("ascii"))
+                            client_socket.send(f"Sent MESG to {mesg_user}".encode("ascii"))
                 else:
                     client_socket.send("Recipient not found".encode("ascii"))
             else:
@@ -92,7 +92,8 @@ def threaded(client_socket):
             if client_socket in active_users:
                 message = ' '.join(data.split()[1:])
                 for user_socket in active_users.keys():
-                    user_socket.send(f"{username} : {message}".encode("ascii"))
+                    user_socket.send(f"{username} is sending a Broadcast".encode("ascii"))
+                    user_socket.send(f"\n{username} : {message}".encode("ascii"))
             else:
                 client_socket.send("Only Users can use the BCST command".encode("ascii"))
 
@@ -133,15 +134,19 @@ def main():
     while True:
         # establish connection with client
         client_socket, addr = server_socket.accept()
-        address = f"{addr[0]} : {addr[1]}"
-        print(f"Connected to : {address}")
+        if len(active_users) < 10:
+            client_socket.send("Enter JOIN followed by your username: ".encode("ascii"))
+            address = f"{addr[0]} : {addr[1]}"
+            print(f"Connected to : {address}")
 
-        # lock acquired by client
-        # print_lock.acquire()
+            # lock acquired by client
+            # print_lock.acquire()
 
-        # Start a new thread and return its identifier
-        thread = Thread(target=threaded, args=(client_socket,))
-        thread.start()
+            # Start a new thread and return its identifier
+            thread = Thread(target=threaded, args=(client_socket,))
+            thread.start()
+        else:
+            client_socket.send("Too Many Users".encode("ascii"))
 
     # closes the socket
     server_socket.close()

@@ -41,9 +41,6 @@ def setup_connection(server_port):
     server_socket = socket(AF_INET, SOCK_STREAM)
     server_socket.connect((host, server_port))
 
-    # Initial message for user to enter username
-    print("Enter JOIN followed by your username:")
-
     return server_socket
 
 
