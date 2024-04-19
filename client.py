@@ -1,60 +1,118 @@
-# Import socket module
 from socket import *
-# import system module
 import sys
-# import threading module
-from threading import *
+from threading import Thread
 
-# checks if correct amount of arguments were passed
-if len(sys.argv) != 2:
-    print("Usage: python3 client.py <svr_port>")
-    sys.exit(1)
+# List to store registered clients
+registered_clients = []
 
-# init server_port from argument
-server_port = int(sys.argv[1])
+# Function to relay a message from a sender to a recipient if the recipient is registered.
+def relay_message(sender, recipient, message, server_socket):
+  if recipient not in registered_clients: # If not registered print Unknown Recipient
+    print("Unknown Recipient")
+    server_socket.send("Unknown Recipient".encode('ascii')) # Encode message to ascii and send to server
+  else:
+    server_socket.send(f"{sender} says: {message}".encode('ascii')) # Encode message to ascii and send to server
 
+# Function to broadcast a message from a sender to all registered clients except the sender.
+def broadcast_message(sender, message, server_socket):
+  for client in registered_clients: # Stepping through the list of registered clients
+    if client != sender: # If the client is not the sender
+      server_socket.send(f"{sender} broadcasts: {message}".encode('ascii')) # Encode message/send
 
+# Function to connect to the server using the given host and port.
+def connect_to_server(host, server_port):
+  server_socket = socket(AF_INET, SOCK_STREAM)
+  server_socket.connect((host, server_port))
+  return server_socket
+
+# Function to process the relay message
+def process_relay_command(command, server_socket):
+  sender, recipient, message = parse_message_command(command)
+  relay_message(sender, recipient, message, server_socket)
+
+# Function to process the broadcast command
+def process_broadcast_command(command, server_socket):
+  sender, message = parse_broadcast_command(command)
+  broadcast_message(sender, message, server_socket)
+
+# Function to parse the register command and extract the username
+def parse_register_command(command):
+  return command.split(' ')[1]
+
+# Function to parse the message command and extract the sender, recipient, and message
+def parse_message_command(command):
+  parts = command.split(' ')
+  sender = parts[1]
+  recipient = parts[2]
+  message = ' '.join(parts[3:])
+  return sender, recipient, message
+
+# Function to parse the broadcast command and extract the sender and message
+def parse_broadcast_command(command):
+  parts = command.split(' ')
+  sender = parts[1]
+  message = ' '.join(parts[2:])
+  return sender, message
+
+# Function to handle the received command
+def handle_received_command(command, server_socket):
+  if command.startswith('REG'):
+    process_register_command(command)
+  elif command.startswith('MESG'):
+    process_relay_command(command, server_socket)
+  elif command.startswith('BCST'):
+    process_broadcast_command(command, server_socket)
+
+# Function to receive messages from the server
 def client_receive(server_socket):
-    # message received from server
-    while True:
-        try:
-            data = server_socket.recv(1024)
-            print('Received from the server : ', str(data.decode('ascii')))
-        except:
-            print("Error")
-            server_socket.close()
-            break
+  while True:
+    try:
+      data = server_socket.recv(1024)
+      print('Received from the server:', str(data.decode('ascii')))
+      command = data.decode('ascii')
+      handle_received_command(command, server_socket)
+    except:
+      print("Error")
+      server_socket.close()
+      break
 
-
+# Function to send messages to the server
 def client_send(server_socket):
-    # message sent to server
-    while True:
-        command = input()
-        server_socket.send(command.encode("ascii"))
+  while True:
+    command = input()
+    server_socket.send(command.encode("ascii"))
 
+# Function to set up connection to the server and start send/receive threads
+def setup_connection(server_port):
+  # Server host
+  host = 'ecs-coding1.csus.edu'
+  # Creating socket and connecting to server
+  server_socket = socket(AF_INET, SOCK_STREAM)
+  server_socket.connect((host, server_port))
 
-def main():
-    # server host
-    host = 'ecs-coding1.csus.edu'
+  # Initial message for user to enter username
+  print("Enter JOIN followed by your username:")
 
-    # creating socket and connecting to server
-    server_socket = socket(AF_INET, SOCK_STREAM)
-    server_socket.connect((host, server_port))
+  return server_socket
 
-    # creating threads
-    send_thread = Thread(target=client_send, args=(server_socket,))
-    recv_thread = Thread(target=client_receive, args=(server_socket,))
-    send_thread.start()
-    recv_thread.start()
+# Function to handle command line arguments, set up the connection, and start the chat threads
+def check_args_and_start():
+  if len(sys.argv) != 3: #If arguments not 2
+    print("Usage: python3 client.py <host> <svr_port>") #Print usage statement
+    sys.exit(1) #Exit
 
-    # IGNORE COMMENTS BELOW THIS
-    # ask the client whether he wants to continue
-    # resp = input('\nDo you want to continue(y/n) :')
-    # if resp == 'y':
-    #     continue
-    # else:
-    #     break
+  server_port = int(sys.argv[2]) #Assign port based on command line argument
+  server_socket = setup_connection(server_port) #Start connection
+  start_chat_threads(server_socket) # Start chat threads
 
+# Function to start the chat threads for sending and receiving messages
+def start_chat_threads(server_socket):
+  # Creating threads for sending and receiving messages
+  send_thread = Thread(target=client_send, args=(server_socket,))
+  recv_thread = Thread(target=client_receive, args=(server_socket,))
+  # Starting threads
+  send_thread.start()
+  recv_thread.start()
 
 if __name__ == '__main__':
-    main()
+  check_args_and_start() #Check arguments and start connection
