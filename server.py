@@ -5,7 +5,7 @@ from threading import *
 # system module
 import sys
 
-# checks if right amount of arguments were passed
+# checks if the right amount of arguments were passed
 if len(sys.argv) != 2:
     print("Usage: python3 server.py <svr_port>")
     sys.exit(1)
@@ -54,20 +54,20 @@ def threaded(client_socket):
                 active_users[client_socket] = username
                 message = f"You have joined as {username}"
                 print(f"{username} Joined the Chatroom")
-                #Needed for the user joining server side
+                # Needed for the user joining server side
                 client_socket.send(f"{username} joined! Connected to server!".encode("ascii"))
-                for client_sock, user in active_users.items(): #Added to broadcat message user Joined!
-                  if client_sock != client_socket:
-                     client_sock.send(f"{username} joined!".encode("ascii"))
+                for client_sock, user in active_users.items():  # Added to broadcast message user Joined!
+                    if client_sock != client_socket:
+                        client_sock.send(f"{username} joined!".encode("ascii"))
 
             client_socket.send(message.encode("ascii"))
 
-        # send the users in chatroom if client is a user currently in the chatroom
         elif command == "LIST":
             if client_socket in active_users:
                 message = "Users in Chatroom: "
-                for username in active_users.values():
-                    message += f"{username}, "
+                user_list = list(active_users.values())
+                if user_list:
+                    message += ', '.join(user_list)
             else:
                 message = "Only Users can use the LIST command"
 
