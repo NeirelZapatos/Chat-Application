@@ -1,3 +1,20 @@
+"""
+
+Client Program Header
+
+Authors: Phillip Harris, Jenil Shingala, Neirel Zapatos
+
+Course Section: CSC-138-04
+
+Date: 4/19/2024
+
+Description: This client program allows users to connect to a server via TCP to join a chatroom, send message requests to the respective server, 
+as well as command requests such as LIST, JOIN, MESG, and BCST. The client program receives and processes the response from the server and, and 
+prints the server response.  Client program will not allow the user to proceed until they are assigned a username. Program also checks for proper
+usage of the terminal commands and assigns variables based on usage input.  
+
+"""
+
 from socket import *
 import sys
 from threading import Thread
