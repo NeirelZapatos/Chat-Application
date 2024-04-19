@@ -2,10 +2,10 @@
 from socket import *
 # import thread module
 from threading import *
-#  system module
+# system module
 import sys
 
-# checks if right amount of arguments were passed
+# checks if the right amount of arguments were passed
 if len(sys.argv) != 2:
     print("Usage: python3 server.py <svr_port>")
     sys.exit(1)
@@ -19,15 +19,17 @@ active_users = {}
 
 # thread function
 def threaded(client_socket):
-    # runs until break
+    # loops until break
     while True:
-
         # data received from client
-        try:
-            data = client_socket.recv(1024)
-            data = str(data.decode('ascii'))
-        except:
-            pass
+        data = client_socket.recv(1024)
+        data = str(data.decode('ascii'))
+
+        # checks the command
+        if len(data.split()) > 1:
+            command = data.split()[0]
+        else:
+            command = data
 
         # if no data returned this disconnect
         if not data:
@@ -38,12 +40,6 @@ def threaded(client_socket):
             # lock released on exit
             # print_lock.release()
             break
-
-        # gets command
-        if len(data.split()) > 1:
-            command = data.split()[0]
-        else:
-            command = data
 
         # checks and validates the join command
         if command == "JOIN":
@@ -58,36 +54,65 @@ def threaded(client_socket):
                 active_users[client_socket] = username
                 message = f"You have joined as {username}"
                 print(f"{username} Joined the Chatroom")
+                # Needed for the user joining server side
+                client_socket.send(f"{username} joined! Connected to server!".encode("ascii"))
+                for client_sock, user in active_users.items():  # Added to broadcast message user Joined!
+                    if client_sock != client_socket:
+                        client_sock.send(f"{username} joined!".encode("ascii"))
 
             client_socket.send(message.encode("ascii"))
 
-        # send the users in chatroom if client is a user currently in the chatroom
-        if command == "LIST":
+        elif command == "LIST":
             if client_socket in active_users:
                 message = "Users in Chatroom: "
-                for username in active_users.values():
-                    message += f"{username}, "
+                user_list = list(active_users.values())
+                if user_list:
+                    message += ', '.join(user_list)
             else:
                 message = "Only Users can use the LIST command"
 
             client_socket.send(message.encode("ascii"))
 
-        # broadcast message to every user in chatroom
-        if command == "BCST":
+        # send messages to individual clients
+        elif command == "MESG":
+            if client_socket in active_users:
+                recipient = data.split()[1]
+                message = ' '.join(data.split()[2:])
+                if recipient in active_users.values():
+                    for user_socket, mesg_user in active_users.items():
+                        if mesg_user == recipient:
+                            user_socket.send(f"Message from {mesg_user}: {message}".encode("ascii"))
+                else:
+                    client_socket.send("Recipient not found".encode("ascii"))
+            else:
+                client_socket.send("Only Users can use the MESG command".encode("ascii"))
+
+        # sends messages to all users
+        elif command == "BCST":
+            if client_socket in active_users:
+                message = ' '.join(data.split()[1:])
+                for user_socket in active_users.keys():
+                    user_socket.send(f"{username} : {message}".encode("ascii"))
+            else:
+                client_socket.send("Only Users can use the BCST command".encode("ascii"))
+
+        # disconnects user
+        elif command == "QUIT":
             if client_socket in active_users:
                 username = active_users[client_socket]
-                words = data.split()
-                send_words = words[1:]
-                joined_words = ' '.join(send_words)
+                print(f'Disconnecting {username}')
+                message = f"{username} has Disconnected"
+                if client_socket in active_users:
+                    del active_users[client_socket]
                 for user_socket in active_users.keys():
-                    if user_socket != client_socket:
-                        message = f"{username}: {joined_words}"
-                    else:
-                        message = f"Sent: {joined_words}"
                     user_socket.send(message.encode("ascii"))
+                break
             else:
-                message = "You must be a user in the Chatroom to use the BCST command"
-                client_socket.send(message.encode("ascii"))
+                client_socket.send("Only Users can use the QUIT command".encode("ascii"))
+
+        # command not possible
+        else:
+            client_socket.send("That is not a Valid Command".encode("ascii"))
 
     # connection closed
     client_socket.close()
@@ -111,15 +136,14 @@ def main():
         address = f"{addr[0]} : {addr[1]}"
         print(f"Connected to : {address}")
 
+        # lock acquired by client
+        # print_lock.acquire()
+
         # Start a new thread and return its identifier
         thread = Thread(target=threaded, args=(client_socket,))
         thread.start()
 
-        # lock acquired by client
-        # print_lock.acquire()
-        # receive_thread = threading.Thread(target=receive,args=(nickname, client_socket,))
-
-    # closes socket
+    # closes the socket
     server_socket.close()
 
 
