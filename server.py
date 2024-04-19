@@ -1,3 +1,23 @@
+"""
+Server Program Header
+
+Authors: Phillip Harris, Jenil Shingala, Neirel Zapatos
+
+Course Section: CSC-138-04
+
+Date: 4/19/2024
+
+Description: This server program receives message and command requests from the client side. If the server receives  JOIN  request, 
+the server will validate the user by checking to see if the username exists already.  Also, the server checks if there are more than 
+10 active users in the chat room. Server will not allow the user to proceed until they are assigned a username.  Once a user successfully 
+joins the chatroom, the server will send a message to all users in the chatroom that a new user has joined and a message to the user that 
+they have joined the chatroom.  The server also checks if the user is a registered user before allowing for the use of the commands.  LIST 
+command provides a list of active users in the chatroom.  MESG command allows users to send messages to other users in the chatroom.  BCST 
+command allows users to broadcast messages to all users in the chatroom.  QUIT comman allows users to exit the chatroom.  The server program 
+receives and processes the response from the client and, relays the message to the client side.  Once 5 users have joined the chatroom, the 
+server will broadcast message.
+
+"""
 # import socket programming library
 from socket import *
 # import thread module
