@@ -27,7 +27,7 @@ import sys
 
 # checks if the right amount of arguments were passed
 if len(sys.argv) != 2:
-    print("Usage: python3 server.py <svr_port>")
+    print("\nUsage: python3 server.py <svr_port>\n")
     sys.exit(1)
 
 # server port set from argument
@@ -54,7 +54,7 @@ def threaded(client_socket):
         # if no data returned this disconnect
         if not data:
             username = active_users[client_socket]
-            print(f'Disconnecting {username}')
+            print(f'\nDisconnecting {username}')
             if client_socket in active_users:
                 del active_users[client_socket] #Delete user
             # lock released on exit
@@ -65,30 +65,30 @@ def threaded(client_socket):
         if command == "JOIN":
             test_username = data.split()[1] #Splits users in the string
             if client_socket in active_users:
-                message = "Client can't have multiple users"
+                message = "\nClient can't have multiple users"
             elif test_username in active_users.values():
-                message = "Username already in use"
+                message = "\nUsername already in use"
             elif len(active_users) >= 10:
-                message = "Too many users"
+                message = "\nToo many users"
             else:
                 username = test_username #Username = split up string
                 active_users[client_socket] = username #pinpointing user and assigning split string
-                message = f"You have joined as {username}"
-                print(f"{username} Joined the Chatroom")
+                message = f"\n{username} Joined! Connected to server!\n"
+                print(f"\n{username} Joined the Chatroom")
                 for user_socket, user in active_users.items():  # Added to broadcast message user Joined!
                     if user_socket != client_socket:
-                        user_socket.send(f"{username} joined!".encode("ascii"))
+                        user_socket.send(f"{username} joined!\n".encode("ascii"))
 
             client_socket.send(message.encode("ascii")) #Send encoded message
 
         elif command == "LIST":
             if client_socket in active_users:
-                message = "Users in Chatroom: "
+                message = "\nUsers in Chatroom: "
                 user_list = list(active_users.values()) #Creating user_list string
                 if user_list:
                     message += ', '.join(user_list) # joins each user in list by comma and space
             else:
-                message = "Only Users can use the LIST command"
+                message = "\nOnly Users can use the LIST command\n"
 
             client_socket.send(message.encode("ascii")) #Sending encoded message
 
@@ -102,32 +102,31 @@ def threaded(client_socket):
                 if recipient in active_users.values():
                     for user_socket, mesg_user in active_users.items(): #Steps through active users
                         if mesg_user == recipient:  #If message sent by user send messages
-                            user_socket.send(f"Message from {username}: {message}".encode("ascii"))
-                            client_socket.send(f"Sent MESG to {mesg_user}".encode("ascii"))
+                            user_socket.send(f"\nMessage from {username}: {message}\n".encode("ascii"))
+                            client_socket.send(f"\nSent MESG to {mesg_user}".encode("ascii"))
                 else: #Else send encoded message "Recipient not found"
-                    client_socket.send("Recipient not found".encode("ascii"))
+                    client_socket.send("\nRecipient not found\n".encode("ascii"))
             else: #Else send encoded message "Only Users can use the MESG command"
-                client_socket.send("Only Users can use the MESG command".encode("ascii"))
+                client_socket.send("\nOnly Users can use the MESG command\n".encode("ascii"))
 
-        # sends messages to all users
         # sends messages to all users
         elif command == "BCST":
            if client_socket in active_users:
                message = ' '.join(data.split()[1:])  # Joins the words in the message
                for user_socket in active_users.keys():  # For each User in the database send message
                    if user_socket == client_socket:  # Check if the user_socket is not equal to client_socket
-                       client_socket.send(f"{username} is sending a Broadcast".encode("ascii"))
+                       client_socket.send(f"\n{username} is sending a Broadcast\n".encode("ascii"))
                    else:
-                       user_socket.send(f"{username} : {message}".encode("ascii"))
+                       user_socket.send(f"\n{username} : {message}\n".encode("ascii"))
            else:
-                client_socket.send("Only Users can use the BCST command".encode("ascii"))
+                client_socket.send("\nOnly Users can use the BCST command\n".encode("ascii"))
 
         # disconnects user
         elif command == "QUIT":
             if client_socket in active_users:
                 username = active_users[client_socket] #Assign user to active users
-                print(f'Disconnecting {username}')
-                message = f"{username} has Disconnected"
+                print(f'\nDisconnecting {username}')
+                message = f"\n{username} has Disconnected"
                 if client_socket in active_users:
                     del active_users[client_socket] #Delete user
                 for user_socket in active_users.keys(): #Broadcast message that user has left
@@ -136,11 +135,11 @@ def threaded(client_socket):
 
                 break
             else: #Else send/encode invalid user message
-                client_socket.send("Only Users can use the QUIT command".encode("ascii"))
+                client_socket.send("\nOnly Users can use the QUIT command\n".encode("ascii"))
 
         # command not possible
         else:
-            client_socket.send("That is not a Valid Command".encode("ascii"))
+            client_socket.send("\nThat is not a Valid Command\n".encode("ascii"))
 
     # connection closed
     client_socket.close()
@@ -151,11 +150,11 @@ def main():
     host = ""
     server_socket = socket(AF_INET, SOCK_STREAM)
     server_socket.bind((host, server_port))
-    print("Socket binded to port", server_port)
+   # print("Socket binded to port", server_port)
 
     # put the socket into listening mode
     server_socket.listen(5)
-    print("Socket is listening")
+    print("\nThe Chat Server Started")
 
     # a forever loop until client wants to exit
     while True:
@@ -163,8 +162,8 @@ def main():
         client_socket, addr = server_socket.accept()
         if len(active_users) < 10:
             client_socket.send("Enter JOIN followed by your username: ".encode("ascii"))
-            address = f"{addr[0]} : {addr[1]}"
-            print(f"Connected to : {address}")
+            address = f"('{addr[0]}' , {addr[1]})"
+            print(f"\nConnected with  {address}")
 
             # lock acquired by client
             # print_lock.acquire()
@@ -173,7 +172,7 @@ def main():
             thread = Thread(target=threaded, args=(client_socket,))
             thread.start()
         else:
-            client_socket.send("Too Many Users".encode("ascii"))
+            client_socket.send("\nToo Many Users\n".encode("ascii"))
 
     # closes the socket
     server_socket.close()

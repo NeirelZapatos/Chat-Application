@@ -69,7 +69,7 @@ def setup_connection(server_port):
 # Function to handle command line arguments, set up the connection, and start the chat threads
 def check_args_and_start():
     if len(sys.argv) != 3:  # If arguments not 2
-        print("Usage: python3 client.py <host> <svr_port>")  # Print usage statement
+        print("\nUsage: python3 client.py <host> <svr_port>\n")  # Print usage statement
         sys.exit(1)  # Exit
 
     server_port = int(sys.argv[2])  # Assign port based on command line argument
