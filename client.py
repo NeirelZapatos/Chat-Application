@@ -41,7 +41,6 @@ def client_receive(server_socket):
             server_socket.close()
             sys.exit(0)  # Exit the client process
 
-
 # Function to send messages to the server
 def client_send(server_socket):
     while True:
@@ -52,7 +51,6 @@ def client_send(server_socket):
             sys.exit(0)  # Exit the client process
         else:
             server_socket.send(command.encode("ascii"))
-
 
 # Function to set up connection to the server and start send/receive threads
 def setup_connection(server_port):

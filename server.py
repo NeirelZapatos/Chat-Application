@@ -116,9 +116,9 @@ def threaded(client_socket):
         elif command == "QUIT":
             if client_socket in active_users:
                 username = active_users[client_socket] #Assign user to active users
-                print(f'\n{username} is quitting the chat server')
+                print(f'\n{username} left the chat server')
                 # Message for the user who is quitting
-                user_quit_message = f"\nYou have left the chat server\n"
+                user_quit_message = f"\n{username} is quitting the chat server\n"
                 client_socket.send(user_quit_message.encode("ascii"))
                 message = f"{username} left\n"
                 if client_socket in active_users:
