@@ -36,18 +36,23 @@ def client_receive(server_socket):
         except:
             print("Error")
             server_socket.close()
-            break
+            sys.exit(0)  # Exit the client process
         if not data:
             print("Disconnecting")
             server_socket.close()
-            break
+            sys.exit(0)  # Exit the client process
 
 
 # Function to send messages to the server
 def client_send(server_socket):
     while True:
         command = input()
-        server_socket.send(command.encode("ascii"))
+        if command == "QUIT":
+            server_socket.send(command.encode("ascii"))
+            server_socket.close()  # Close the server socket
+            sys.exit(0)  # Exit the client process
+        else:
+            server_socket.send(command.encode("ascii"))
 
 
 # Function to set up connection to the server and start send/receive threads
@@ -63,12 +68,12 @@ def setup_connection(server_port):
 
 # Function to handle command line arguments, set up the connection, and start the chat threads
 def check_args_and_start():
-    if len(sys.argv) != 3:  #If arguments not 2
-        print("Usage: python3 client.py <host> <svr_port>")  #Print usage statement
-        sys.exit(1)  #Exit
+    if len(sys.argv) != 3:  # If arguments not 2
+        print("Usage: python3 client.py <host> <svr_port>")  # Print usage statement
+        sys.exit(1)  # Exit
 
-    server_port = int(sys.argv[2])  #Assign port based on command line argument
-    server_socket = setup_connection(server_port)  #Start connection
+    server_port = int(sys.argv[2])  # Assign port based on command line argument
+    server_socket = setup_connection(server_port)  # Start connection
     start_chat_threads(server_socket)  # Start chat threads
 
 
@@ -83,4 +88,4 @@ def start_chat_threads(server_socket):
 
 
 if __name__ == '__main__':
-    check_args_and_start()  #Check arguments and start connection
+    check_args_and_start()  # Check arguments and start connection

@@ -127,6 +127,8 @@ def threaded(client_socket):
                     del active_users[client_socket]
                 for user_socket in active_users.keys():
                     user_socket.send(message.encode("ascii"))
+                client_socket.close() #Close the client socket
+                
                 break
             else:
                 client_socket.send("Only Users can use the QUIT command".encode("ascii"))
