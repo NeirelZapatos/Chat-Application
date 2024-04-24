@@ -34,7 +34,6 @@ def client_receive(server_socket):
             data = server_socket.recv(1024)
             print( str(data.decode('ascii')))
         except:
-            print("Error")
             server_socket.close()
             sys.exit(0)  # Exit the client process
         if not data:
