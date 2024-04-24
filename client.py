@@ -22,16 +22,19 @@ from threading import Thread
 
 # Function to connect to the server using the given host and port.
 def connect_to_server(host, server_port):
+    # Create a socket using IPv4 and TCP protocol
     server_socket = socket(AF_INET, SOCK_STREAM)
+    # Connect to the server using the specified host and port
     server_socket.connect((host, server_port))
+    # Return the socket connected to the server
     return server_socket
 
 
 # Function to receive messages from the server
 def client_receive(server_socket):
-    while True:
+    while True: #While running receive message then decode
         try:
-            data = server_socket.recv(1024)
+            data = server_socket.recv(1024) 
             print('Received from the server:', str(data.decode('ascii')))
         except:
             print("Error")
@@ -46,12 +49,12 @@ def client_receive(server_socket):
 # Function to send messages to the server
 def client_send(server_socket):
     while True:
-        command = input()
-        if command == "QUIT":
-            server_socket.send(command.encode("ascii"))
+        command = input()  #Get input
+        if command == "QUIT":  #Check for QUIT
+            server_socket.send(command.encode("ascii")) #Send message to server
             server_socket.close()  # Close the server socket
             sys.exit(0)  # Exit the client process
-        else:
+        else: #Else not QUIT command
             server_socket.send(command.encode("ascii"))
 
 
