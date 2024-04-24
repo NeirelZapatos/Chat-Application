@@ -114,6 +114,7 @@ def threaded(client_socket):
             if client_socket in active_users:
                 message = ' '.join(data.split()[1:]) #Joins the words in the message
                 for user_socket in active_users.keys(): #For each User in the database send message
+                    if user_socket != client_socket:  # Check if the user_socket is not equal to client_socket
                     user_socket.send(f"{username} is sending a Broadcast".encode("ascii"))
                     user_socket.send(f"\n{username} : {message}".encode("ascii"))
             else:
