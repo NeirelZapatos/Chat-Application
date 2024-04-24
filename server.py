@@ -112,14 +112,15 @@ def threaded(client_socket):
         # sends messages to all users
         # sends messages to all users
         elif command == "BCST":
-           if client_socket in active_users:
-               message = ' '.join(data.split()[1:])  # Joins the words in the message
-               broadcast_message = f"{username} is sending a Broadcast\n{username} : {message}"
-               for user_socket in active_users.keys():  # For each User in the database send message
-                   if user_socket != client_socket:  # Check if the user_socket is not equal to client_socket
-                       user_socket.send(broadcast_message.encode("ascii"))
-           else:
-                client_socket.send("Only Users can use the BCST command".encode("ascii"))
+            if client_socket in active_users:
+                message = ' '.join(data.split()[1:])  # Joins the words in the message
+                for user_socket in active_users.keys():  # For each User in the database send message
+                   if user_socket == client_socket:
+                      client_socket.send(f"{username} is sending a Broadcast".encode("ascii"))
+            else:
+                user_socket.send(f"{username} : {message}".encode("ascii"))
+       else:
+           client_socket.send("Only Users can use the BCST command".encode("ascii"))
 
         # disconnects user
         elif command == "QUIT":
