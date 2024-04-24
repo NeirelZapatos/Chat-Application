@@ -46,7 +46,7 @@ def client_send(server_socket):
     while True:
         command = input()
         if command == "QUIT":
-            server_socket.send(command.encode("ascii"))
+            server_socket.send(command.encode("ascii")) #Send message to server
             server_socket.close()  # Close the server socket
             sys.exit(0)  # Exit the client process
         else:
