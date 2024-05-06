@@ -32,7 +32,7 @@ def client_receive(server_socket):
     while True:
         try:
             data = server_socket.recv(1024)
-            print( str(data.decode('ascii')))
+            print(str(data.decode('ascii')))
         except:
             server_socket.close()
             sys.exit(0)  # Exit the client process
@@ -41,21 +41,23 @@ def client_receive(server_socket):
             server_socket.close()
             sys.exit(0)  # Exit the client process
 
+
 # Function to send messages to the server
 def client_send(server_socket):
     while True:
         command = input()
         if command == "QUIT":
-            server_socket.send(command.encode("ascii")) #Send message to server
+            server_socket.send(command.encode("ascii"))  #Send message to server
             server_socket.close()  # Close the server socket
             sys.exit(0)  # Exit the client process
         else:
             server_socket.send(command.encode("ascii"))
 
+
 # Function to set up connection to the server and start send/receive threads
-def setup_connection(server_port):
+def setup_connection(server_port, server_host):
     # Server host
-    host = 'ecs-coding1.csus.edu'
+    host = server_host
     # Creating socket and connecting to server
     server_socket = socket(AF_INET, SOCK_STREAM)
     server_socket.connect((host, server_port))
@@ -69,8 +71,9 @@ def check_args_and_start():
         print("\nUsage: python3 client.py <host> <svr_port>\n")  # Print usage statement
         sys.exit(1)  # Exit
 
+    server_host = sys.argv[1]
     server_port = int(sys.argv[2])  # Assign port based on command line argument
-    server_socket = setup_connection(server_port)  # Start connection
+    server_socket = setup_connection(server_port, server_host)  # Start connection
     start_chat_threads(server_socket)  # Start chat threads
 
 
